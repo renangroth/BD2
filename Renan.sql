@@ -9,6 +9,8 @@ END; $$
 LANGUAGE plpgsql;
 
 
+//select somefunc();
+
 
 
 
@@ -35,6 +37,8 @@ insert into dado values (4,'pedro',42, 'chapeco', 1300);
 
 
 
+//NUMERO1
+
 create or replace function numero1()
 returns boolean as $$
 declare
@@ -49,6 +53,41 @@ begin
 	return FOUND;
 end;
 $$ language plpgsql;
+
+
+//NUMERO2
+
+create or replace function numero2(aumento float, usuario int)
+returns boolean as $$
+
+begin
+		update dado set salary = salary * (1 + aumento/100) where usuario = id;
+
+	return FOUND;
+end;
+$$ language plpgsql;
+
+
+//NUMERO3
+
+create or replace function numero3()
+returns boolean as $$
+
+declare
+	linha record;
+begin
+	for linha IN select * from dado where dado.id >= 0 
+	loop
+		update dado set usuario = current_user where dado.id = linha.id;
+		update dado set data = current_date where dado.id = linha.id;
+	end loop;
+
+return FOUND;
+end;
+$$ language plpgsql;
+
+
+
 
 
 select * from dado;
