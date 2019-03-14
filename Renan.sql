@@ -91,3 +91,98 @@ $$ language plpgsql;
 
 
 select * from dado;
+
+
+
+
+CREATE TABLE emp (
+ empname text,
+ salary integer,
+ last_date timestamp,
+ last_user text
+);
+
+
+CREATE or REPLACE FUNCTION emp_time() RETURNS trigger AS $$
+ BEGIN
+ NEW.last_date := current_timestamp;
+ NEW.last_user := current_user;
+ NEW.salary := NEW.salary * 1.1;
+ RETURN NEW;
+ END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER emp_time BEFORE INSERT OR UPDATE ON emp
+ FOR EACH ROW EXECUTE PROCEDURE emp_time();
+
+
+
+CREATE TABLE emp (
+ empname text,
+ salary integer
+);
+CREATE TABLE emp_audit(
+ operation varchar(1) ,
+ stamp timestamp,
+ username text ,
+ empname text ,
+ salary integer
+);
+
+insert into emp(empname, salary) values ('joao',1000);
+
+
+
+*****ATIVIDADE 1******************************************************
+
+CREATE TABLE EMPREGADO(
+id integer primary key,
+nome varchar(50), 
+cpf varchar(15),
+Num_Departamento integer, 
+Salario DECIMAL(10,2 ), 
+Supervisor varchar(50)
+);
+
+CREATE TABLE Auditoria(
+empregado_ID int,
+nome varchar(50), 
+cpf CHAR(12), 
+Num_Departamento integer,
+Salario DECIMAL(10,2 ), 
+Supervisor varchar(50) , 
+evento int, 
+usuario varchar,
+date date);
+
+CREATE or REPLACE FUNCTION Auditoria() RETURNS trigger AS $$
+ BEGIN
+ 	IF (TG_OP = 'INSERT') THEN
+ 		INSERT INTO Auditoria values (NEW.*, 1, current_user, current_date);
+ 		RETURN NEW;
+ 	ELSEIF (TG_OP = 'UPDATE') THEN
+ 		INSERT INTO Auditoria values (NEW.*, 2, current_user, current_date);
+ 		RETURN NEW;
+ 	ELSEIF (TG_OP = 'DELETE') THEN
+ 		INSERT INTO Auditoria values (NEW.*, 3, current_user, current_date);
+ 		RETURN OLD;
+ 	END IF;
+ 	RETURN NULL;
+ END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER Auditoria BEFORE INSERT OR DELETE OR UPDATE
+ ON EMPREGADO FOR EACH ROW EXECUTE PROCEDURE Auditoria();
+
+
+
+insert into EMPREGADO(id, nome, cpf, Num_Departamento, Salario, Supervisor)
+ values (1, 'Joao', 0000000000, 10, 10000, 'Pedro');
+
+select *from Auditoria;
+
+**************************************************************************
+
+
